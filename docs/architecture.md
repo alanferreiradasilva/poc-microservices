@@ -1,54 +1,54 @@
-# Plano de Desenvolvimento de POC – Frontend + API Gateway + 3 Microserviços
+# Development Plan for POC – Frontend + API Gateway + 3 Microservices
 
-## 🎯 Objetivo
-Desenvolver uma prova de conceito (POC) para estudar arquitetura de microserviços com autenticação, produtos e vendas, utilizando Vue 3 no frontend e .NET Core 10 no backend.
+## 🎯 Objective
+Develop a proof of concept (POC) to study microservices architecture with authentication, products, and sales, using Vue 3 on the frontend and .NET Core 10 on the backend.
 
 ---
 
-## 🧱 Arquitetura Geral
+## 🧱 General Architecture
 - **Frontend:** Vue 3 + TypeScript + Pinia + Composition API.
-- **API Gateway:** .NET Core 10 Web API com Minimal APIs.
-- **Microserviços:** .NET Core 10 Web API com Minimal APIs.
+- **API Gateway:** .NET Core 10 Web API with Minimal APIs.
+- **Microservices:** .NET Core 10 Web API with Minimal APIs.
 
-### Microserviços
-1. **Autenticação:** responsável por login e emissão de JWT.
-2. **Produtos:** CRUD de produtos.
-3. **Vendas:** CRUD de vendas e integração com produtos.
+### Microservices
+1. **Authentication:** responsible for login and JWT issuance.
+2. **Products:** CRUD for products.
+3. **Sales:** CRUD for sales and integration with products.
 
-### Comunicação
+### Communication
 - **Frontend → API Gateway:** via REST API.
-- **API Gateway → Microserviços:** via REST API.
-- **Microserviços ↔ Microserviços:** via REST API interna.
+- **API Gateway → Microservices:** via REST API.
+- **Microservices ↔ Microservices:** via internal REST API.
 
-### Segurança e Rede
-- Apenas o **API Gateway** é exposto à internet.
-- Os **microserviços** ficam em rede privada e se comunicam internamente.
-- O **JWT** é validado no Gateway e propagado para os microserviços.
+### Security and Network
+- Only the **API Gateway** is exposed to the internet.
+- **Microservices** are on a private network and communicate internally.
+- The **JWT** is validated at the Gateway and propagated to the microservices.
 
 ---
 
-## 🗄️ Bases de Dados
-Cada microserviço possui sua base dedicada, garantindo isolamento e autonomia.
+## 🗄️ Databases
+Each microservice has its own dedicated database, ensuring isolation and autonomy.
 
-| Microserviço | Função | Provedor sugerido | Observações |
+| Microservice | Function | Suggested Provider | Notes |
 |---------------|--------|-------------------|--------------|
-| **Autenticação** | Armazenar usuários e credenciais | **SQLite** | Simples, leve e ideal para POC inicial. |
-| **Produtos** | Armazenar produtos e auditoria | **PostgreSQL** | Robusto, relacional e com suporte avançado a JSON. |
-| **Vendas** | Armazenar registros de vendas | **MongoDB** | Flexível e escalável para dados semi-estruturados. |
+| **Authentication** | Store users and credentials | **SQLite** | Simple, lightweight, and ideal for the initial POC. |
+| **Products** | Store products and auditing data | **PostgreSQL** | Robust, relational, with advanced JSON support. |
+| **Sales** | Store sales records | **MongoDB** | Flexible and scalable for semi-structured data. |
 
-Cada registro de produto ou venda deve conter o `UserId` extraído do JWT para auditoria.
+Each product or sale record must contain the `UserId` extracted from the JWT for auditing.
 
-Para mantermos todas estas bases vamos necessitar subir elas em conteiners Docker para facilitar o desenvolvimento.
+To keep all these databases running, we need to spin them up in Docker containers to ease development.
 
 ---
 
-## 🔐 Gestão de Secrets e Connection Strings
+## 🔐 Secrets and Connection Strings Management
 
-- **Ambiente de Desenvolvimento:**  
-Todas as keys e connection strings devem ser configuradas usando o **dotnet user-secrets**.  
-Isso evita expor credenciais sensíveis em arquivos de configuração ou no controle de versão.  
+- **Development Environment:**  
+All keys and connection strings must be configured using **dotnet user-secrets**.  
+This avoids exposing sensitive credentials in configuration files or version control.  
 
-Exemplo de configuração:  
+Example configuration:  
 ```bash
 dotnet user-secrets set "MicroShopPOC:JwtKey" "MicroShopPOC-secret-key"
 dotnet user-secrets set "MicroShopPOC:AuthDb" "Data Source=auth.db"
@@ -56,11 +56,11 @@ dotnet user-secrets set "MicroShopPOC:ProductsDb" "..."
 dotnet user-secrets set "MicroShopPOC:SalesDb" "..."
 ```
 
-Boas práticas:
-Nunca versionar secrets em arquivos appsettings.json.
-Usar appsettings.json apenas para valores não sensíveis.
+Best practices:
+Never version secrets in appsettings.json files.
+Use appsettings.json only for non-sensitive values.
 
-Configurar o Program.cs para ler secrets de acordo com o ambiente:
+Configure Program.cs to read secrets according to the environment:
 ```csharp
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -68,40 +68,40 @@ builder.Configuration
     .AddEnvironmentVariables();
 ```
 
-👉 Assim você garante que **em desenvolvimento** os secrets ficam no `user-secrets` e **em produção** nas variáveis de ambiente, sem risco de expor credenciais.
+👉 This ensures that **in development** secrets are stored in `user-secrets` and **in production** in environment variables, with no risk of exposing credentials.
 
 ---
 
-## 🔄 Fluxo de Autenticação e Autorização
-1. **Login:** Frontend envia credenciais para o API Gateway.
-2. **Gateway:** encaminha para o microserviço de autenticação.
-3. **Auth Service:** valida credenciais e emite JWT com `UserId`.
-4. **Gateway:** retorna o token ao frontend.
-5. **Frontend:** armazena o JWT e envia em todas as requisições subsequentes.
-6. **Microserviços:** extraem o `UserId` do token e o registram nos dados criados.
+## 🔄 Authentication and Authorization Flow
+1. **Login:** Frontend sends credentials to the API Gateway.
+2. **Gateway:** forwards to the authentication microservice.
+3. **Auth Service:** validates credentials and issues JWT with `UserId`.
+4. **Gateway:** returns the token to the frontend.
+5. **Frontend:** stores the JWT and sends it in all subsequent requests.
+6. **Microservices:** extract the `UserId` from the token and record it in created data.
 
 ---
 
-## Como os Microserviços são estruturados.
-- Classes, interfaces, Dtos, Serviços, Repositórios e Endpoints das minimal apis devem seguir um padrão de nomenclatura.
+## How Microservices are Structured
+- Classes, interfaces, DTOs, Services, Repositories, and Endpoints of the Minimal APIs must follow a naming convention.
 
-Exemplo: Para o microserviço de Produto, todo recurso que vier dele tera as nomenclaturas:
-- Product.cs e ProductDto.cs.
-- IProductService e ProductService.cs.
-- IProductRepository e ProductRepository.cs.
-- ProductEndpoints.cs (minial api).
+Example: For the Product microservice, all resources from it will have the following names:
+- Product.cs and ProductDto.cs.
+- IProductService and ProductService.cs.
+- IProductRepository and ProductRepository.cs.
+- ProductEndpoints.cs (minimal API).
 
-O DbContext como é único por projeto de microserviço deve conter o nome do microserviço `AppProductDbContext.cs`.
+The DbContext, since it is unique per microservice project, should contain the microservice name: `AppProductDbContext.cs`.
 
 ---
 
-## Minimal Apis
-- All endpoinsts should be implements: `MicroShopPOC.Extensions.Endpoints.Abstractions.IEndpointMapper`
+## Minimal APIs
+- All endpoints should implement: `MicroShopPOC.Extensions.Endpoints.Abstractions.IEndpointMapper`
 
-```chsarp
+```csharp
 using MicroShopPOC.Extensions.Endpoints.Abstractions;
 
-public class MyCustomEnpoints : IEndpointMapper {
+public class MyCustomEndpoints : IEndpointMapper {
     
     public async Task Map(WebApplication app)
     {
@@ -123,9 +123,9 @@ public class MyCustomEnpoints : IEndpointMapper {
 }
 ```
 
-All Program.cs from api gateway and microservices should have before `app.Run()`:
+All Program.cs files from the API gateway and microservices should have before `app.Run()`:
 
-```csahrp
+```csharp
 using MicroShopPOC.Extensions.Endpoints;
 
 app.RegisterEndpoints();
@@ -133,42 +133,42 @@ app.RegisterEndpoints();
 
 ---
 
-## 🧩 Telas do Frontend
-1. **Login:** autenticação do usuário.
-2. **Home:** visão geral e navegação.
-3. **Lista de Produtos:** CRUD completo de produtos.
-4. **Lista de Vendas:** CRUD completo de vendas.
-5. **Lista de Usuários:** visualização dos usuários cadastrados.
+## 🧩 Frontend Screens
+1. **Login:** user authentication.
+2. **Home:** overview and navigation.
+3. **Products List:** full CRUD for products.
+4. **Sales List:** full CRUD for sales.
+5. **Users List:** view registered users.
 
 ---
 
-## ⚙️ Comunicação Interna
-- **API Gateway:** roteia requisições para os microserviços conforme configuração.
-- **Microserviços:** podem se comunicar diretamente via HTTP interno.
-- **Mensageria (opcional):** pode ser adicionada futuramente para eventos assíncronos (RabbitMQ ou Kafka).
+## ⚙️ Internal Communication
+- **API Gateway:** routes requests to microservices based on configuration.
+- **Microservices:** can communicate directly via internal HTTP.
+- **Messaging (optional):** can be added in the future for asynchronous events (RabbitMQ or Kafka).
 
 ---
 
-## 🧠 Auditoria e Contexto de Usuário
-- O `UserId` é propagado via JWT e armazenado localmente em cada serviço.
-- Não há relacionamento direto entre bancos.
-- Para consultas agregadas, o Gateway pode compor respostas chamando múltiplos serviços.
+## 🧠 Auditing and User Context
+- The `UserId` is propagated via JWT and stored locally in each service.
+- There is no direct relationship between databases.
+- For aggregated queries, the Gateway can compose responses by calling multiple services.
 
 ---
 
-## 🚀 Próximos Passos
-1. Criar estrutura base dos projetos (.NET e Vue).
-2. Implementar Auth Service com JWT.
-3. Configurar API Gateway com Ocelot ou YARP.
-4. Criar microserviços de Produtos e Vendas.
-5. Implementar frontend com autenticação e CRUDs.
-6. Testar fluxo completo de login, produtos e vendas.
+## 🚀 Next Steps
+1. Create the base structure for the projects (.NET and Vue).
+2. Implement Auth Service with JWT.
+3. Configure API Gateway with Ocelot or YARP.
+4. Create Products and Sales microservices.
+5. Implement frontend with authentication and CRUDs.
+6. Test the complete flow of login, products, and sales.
 
 ---
 
-## ✅ Resultado Esperado
-Uma POC funcional demonstrando:
-- Autenticação distribuída via JWT.
-- Comunicação segura entre Gateway e microserviços.
-- Isolamento de dados por serviço.
-- Frontend integrado e funcional.
+## ✅ Expected Outcome
+A functional POC demonstrating:
+- Distributed authentication via JWT.
+- Secure communication between Gateway and microservices.
+- Data isolation per service.
+- Integrated and functional frontend.
