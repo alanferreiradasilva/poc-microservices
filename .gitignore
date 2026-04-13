@@ -52,3 +52,8 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Custom ignores
+/MicroShopPOC/src/MicroShopPOC.Api/obj
+/MicroShopPOC/src/MicroShopPOC.Api/bin
+/MicroShopPOC/.vs

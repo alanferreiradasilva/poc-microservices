@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/0- Tests/">
+    <Project Path="src/MicroShopPOC.Tests/MicroShopPOC.Tests.csproj" />
+  </Folder>
+  <Folder Name="/1- Web/">
+    <Project Path="src/MicroShopPOC.Api/MicroShopPOC.Api.csproj" />
+  </Folder>
+  <Folder Name="/2- Microservices/">
+    <Project Path="src/MicroShopPOC.AuthApi/MicroShopPOC.AuthApi.csproj" />
+    <Project Path="src/MicroShopPOC.ProductsApi/MicroShopPOC.ProductsApi.csproj" />
+    <Project Path="src/MicroShopPOC.SalesApi/MicroShopPOC.SalesApi.csproj" />
+  </Folder>
+  <Folder Name="/3- Lib/">
+    <Project Path="src/MicroShopPOC.Extensions/MicroShopPOC.Extensions.csproj" />
+  </Folder>
+</Solution>

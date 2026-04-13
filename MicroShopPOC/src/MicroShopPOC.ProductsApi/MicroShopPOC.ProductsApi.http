@@ -1,0 +1,6 @@
+@MicroShopPOC.ProductsApi_HostAddress = http://localhost:5129
+
+GET {{MicroShopPOC.ProductsApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
