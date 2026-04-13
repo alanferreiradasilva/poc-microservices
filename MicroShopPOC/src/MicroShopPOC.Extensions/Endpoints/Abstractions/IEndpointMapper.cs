@@ -1,4 +1,6 @@
-﻿namespace MicroShopPOC.Extensions.Endpoints.Abstractions
+﻿using Microsoft.AspNetCore.Builder;
+
+namespace MicroShopPOC.Extensions.Endpoints.Abstractions
 {
     public interface IEndpointMapper
     {

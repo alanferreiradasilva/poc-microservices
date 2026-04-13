@@ -1,32 +1,55 @@
+using Microsoft.EntityFrameworkCore;
+using MicroShopPOC.AuthApi;
+using MicroShopPOC.Extensions.Endpoints;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddUserSecrets<Program>(optional: true)
+    .AddEnvironmentVariables();
+
+if (builder.Environment.IsEnvironment("Test"))
+{
+    var testDbName = builder.Configuration["MicroShopPOC:AuthTestDbName"] ?? "AuthTestDb";
+    builder.Services.AddDbContext<AppAuthDbContext>(options =>
+        options.UseInMemoryDatabase(testDbName));
+}
+else
+{
+    builder.Services.AddDbContext<AppAuthDbContext>(options =>
+        options.UseSqlite(builder.Configuration["MicroShopPOC:AuthDb"] ?? "Data Source=auth.db"));
+}
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseAuthentication();
+app.UseAuthorization();
 
-var summaries = new[]
+// Ensure database is created and seed admin user
+using (var scope = app.Services.CreateScope())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var db = scope.ServiceProvider.GetRequiredService<AppAuthDbContext>();
+    db.Database.EnsureCreated();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+    if (!db.Users.Any())
+    {
+        db.Users.Add(new AppUser
+        {
+            Username = "admin",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin@123")
+        });
+        db.SaveChanges();
+    }
+}
+
+app.RegisterEndpoints(typeof(Program).Assembly);
 
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }
