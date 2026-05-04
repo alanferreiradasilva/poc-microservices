@@ -1,3 +1,5 @@
+using MicroShopPOC.Extensions.Endpoints;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,6 +25,8 @@ app.MapGet("/weatherforecast", () =>
         .ToArray();
     return forecast;
 });
+
+app.RegisterEndpoints(typeof(Program).Assembly);
 
 app.Run();
 

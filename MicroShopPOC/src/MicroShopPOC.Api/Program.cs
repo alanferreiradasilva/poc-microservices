@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MicroShopPOC.Extensions.Endpoints;
 using Scalar.AspNetCore;
+using MicroShopPOC.Extensions.Services.Abstractions;
+using MicroShopPOC.Extensions.Services.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,10 +52,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddHttpClient("AuthApi", client =>
+var dic = new Dictionary<string, string>
 {
-    client.BaseAddress = new Uri(builder.Configuration["MicroShopPOC:AuthApiUrl"] ?? "http://localhost:5001");
-});
+    ["AuthApi"] = "http://localhost:5001",
+    ["ProductsApi"] = "http://localhost:5002",
+    ["SalesApi"] = "http://localhost:5003"
+};
+
+foreach (var item in dic)
+{
+    builder.Services.AddHttpClient(item.Key, client =>
+    {
+        client.BaseAddress = new Uri(item.Value);
+    });
+}
+
+builder.Services.AddScoped<IHttpClientService, HttpClientService>();
 
 var app = builder.Build();
 

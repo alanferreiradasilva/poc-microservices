@@ -1,6 +1,7 @@
+using MicroShopPOC.Extensions.Domain.Entities;
 using MicroShopPOC.Extensions.Endpoints.Abstractions;
 
-namespace MicroShopPOC.AuthApi;
+namespace MicroShopPOC.AuthApi.Endpoints;
 
 public class AuthEndpoints : IEndpointMapper
 {
@@ -21,6 +22,11 @@ public class AuthEndpoints : IEndpointMapper
                 ? Results.Conflict(new { error = "Username already exists." })
                 : Results.Ok(result);
         }).AllowAnonymous();
+
+        app.MapGet("/api/auth/health", () => {
+            return Results.Ok(HealthCheckDto.GetHealthy());
+        })
+        .AllowAnonymous();
 
         return Task.CompletedTask;
     }

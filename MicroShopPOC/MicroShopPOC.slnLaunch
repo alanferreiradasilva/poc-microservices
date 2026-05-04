@@ -13,12 +13,12 @@
         "DebugTarget": "http"
       },
       {
-        "Path": "src\\MicroShopPOC.ProductsApi\\MicroShopPOC.ProductsApi.csproj",
+        "Path": "src\\MicroShopPOC.SalesApi\\MicroShopPOC.SalesApi.csproj",
         "Action": "Start",
         "DebugTarget": "http"
       },
       {
-        "Path": "src\\MicroShopPOC.SalesApi\\MicroShopPOC.SalesApi.csproj",
+        "Path": "src\\MicroShopPOC.ProductsApi\\MicroShopPOC.ProductsApi.csproj",
         "Action": "Start",
         "DebugTarget": "http"
       }

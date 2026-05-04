@@ -1,6 +1,6 @@
 using MicroShopPOC.Extensions.Endpoints.Abstractions;
 
-namespace MicroShopPOC.Api;
+namespace MicroShopPOC.Api.Endpoints;
 
 public class AuthProxyEndpoints : IEndpointMapper
 {
@@ -22,6 +22,16 @@ public class AuthProxyEndpoints : IEndpointMapper
             var body = await new StreamReader(request.Body).ReadToEndAsync();
             var content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
             var response = await client.PostAsync("/api/auth/register", content);
+            var result = await response.Content.ReadAsStringAsync();
+            return Results.Content(result, "application/json", statusCode: (int)response.StatusCode);
+        }).AllowAnonymous();
+
+        app.MapGet("/api/auth/health", async (HttpRequest request, IHttpClientFactory clientFactory) =>
+        {
+            var client = clientFactory.CreateClient("AuthApi");
+            //var body = await new StreamReader(request.Body).ReadToEndAsync();
+            var content = new StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+            var response = await client.GetAsync("/api/auth/health");
             var result = await response.Content.ReadAsStringAsync();
             return Results.Content(result, "application/json", statusCode: (int)response.StatusCode);
         }).AllowAnonymous();

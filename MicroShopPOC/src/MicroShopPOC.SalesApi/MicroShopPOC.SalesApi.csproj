@@ -6,4 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\MicroShopPOC.Extensions\MicroShopPOC.Extensions.csproj" />
+	</ItemGroup>
 </Project>
